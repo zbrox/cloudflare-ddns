@@ -30,11 +30,6 @@ struct Cli {
     /// Cache file for previously reported IP address (if skipped the IP will be reported on every execution)
     #[structopt(long = "cache", short = "c")]
     cache: Option<PathBuf>,
-
-    // TODO: implement logging later
-    /// Log file (if skipped stdOut is used)
-    #[structopt(long = "log", short = "l")]
-    log_file: Option<PathBuf>,
 }
 
 fn main() -> CliResult {
