@@ -1,0 +1,14 @@
+[package]
+name = "cloudflare-ddns"
+version = "0.1.0"
+authors = ["Rostislav Raykov <z@zbrox.org>"]
+edition = "2018"
+description = "A simple CLI tool to use Cloudflare's free DDNS service"
+repository = "git@github.com:zbrox/cloudflare-ddns.git"
+keywords = ["cloudflare", "ddns", "cli"]
+categories = ["command-line-utilities"]
+license = "MIT"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
