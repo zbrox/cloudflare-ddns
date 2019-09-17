@@ -1,6 +1,7 @@
 on:
   push:
-    - master
+    branches:
+      - master
 
 name: Publish to crates.io
 
