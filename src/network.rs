@@ -2,10 +2,17 @@ use serde::{Serialize, Deserialize};
 use failure::{Error, format_err};
 
 #[derive(Deserialize, Debug)]
-struct CloudflareResponse {
+struct CloudflareListResponse {
     success: bool,
     errors: Vec<String>,
     result: Vec<ObjectWithId>,
+}
+
+#[derive(Deserialize, Debug)]
+struct CloudflareUpdateResponse {
+    success: bool,
+    errors: Vec<String>,
+    result: ObjectWithId,
 }
 
 #[derive(Deserialize, Debug, PartialEq)]
@@ -24,7 +31,7 @@ struct UpdateIpData {
 pub fn get_zone_identifier(zone: &str, email: &str, key: &str) -> Result<String, Error> {
     let client = reqwest::Client::new();
     let url = format!("https://api.cloudflare.com/client/v4/zones?name={}", zone);
-    let response: CloudflareResponse = client
+    let response: CloudflareListResponse = client
         .get(&url)
         .header("X-Auth-Email", email)
         .header("X-Auth-Key", key)
@@ -43,7 +50,7 @@ pub fn get_zone_identifier(zone: &str, email: &str, key: &str) -> Result<String,
 pub fn get_dns_record_id(zone_id: &str, domain: &str, email: &str, key: &str) -> Result<String, Error> {
     let client = reqwest::Client::new();
     let url = format!("https://api.cloudflare.com/client/v4/zones/{}/dns_records?name={}", zone_id, domain);
-    let response: CloudflareResponse = client
+    let response: CloudflareListResponse = client
         .get(&url)
         .header("X-Auth-Email", email)
         .header("X-Auth-Key", key)
@@ -79,7 +86,7 @@ pub fn update_ddns(ip: &str, domain: &str, zone_id: &str, record_id: &str, email
         content: ip.to_owned(),
     };
 
-    let response: CloudflareResponse = client
+    let response: CloudflareUpdateResponse = client
         .put(&url)
         .header("X-Auth-Email", email)
         .header("X-Auth-Key", key)
