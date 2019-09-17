@@ -1,0 +1,22 @@
+on: push
+
+name: Build
+
+jobs:
+  build_and_test:
+    name: Build cloudflare-ddns
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout latest
+        uses: actions/checkout@master
+      - name: Install nightly toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+            toolchain: nightly
+            override: true
+      - name: Cargo build
+        uses: actions-rs/cargo@v1
+        with:
+          toolchain: nightly
+          command: build
+          arguments: --release

@@ -1,0 +1,29 @@
+on:
+  push:
+    branches:
+      - master
+
+name: Publish to crates.io
+
+jobs:
+  build_and_test:
+    name: Publish cloudflare-ddns
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout latest master
+        uses: actions/checkout@master
+      - name: Install nightly toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+            toolchain: nightly
+            override: true
+      - name: Login to crates.io
+        uses: actions-rs/cargo@v1
+        with:
+          toolchain: nightly
+          command: login ${{ secrets.CRATES_TOKEN }}
+      - name: Publish to crates.io
+        uses: actions-rs/cargo@v1
+        with:
+          toolchain: nightly
+          command: publish

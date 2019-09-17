@@ -1,0 +1,42 @@
+on:
+  push:
+    tags:
+      - '*.*.*'
+
+name: Create a GitHub release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Install nightly toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+            toolchain: nightly
+            override: true
+      - name: Cargo build
+        uses: actions-rs/cargo@v1
+        with:
+          toolchain: nightly
+          command: build
+          arguments: --release
+      - name: Extract version
+        id: version
+        uses: actions/github-script@0.2.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            return context.payload.ref.replace(/\/refs\/tags\//, '');
+      - name: Archive
+        run: tar cfJ cloudflare-ddns-${{ steps.version.outputs.result }}.tar.xz target/cloudflare-ddns
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        with:
+          body: |
+            cloudflare-ddns release ${{ steps.version.outputs.result }}
+          files: |
+            cloudflare-ddns-${{ steps.version.outputs.result }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
