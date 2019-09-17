@@ -34,6 +34,8 @@ jobs:
       - name: Create release
         uses: softprops/action-gh-release@v1
         with:
+          body: |
+            cloudflare-ddns release ${{ steps.version.outputs.result }}
           files: |
             cloudflare-ddns-${{ steps.version.outputs.result }}
         env:
