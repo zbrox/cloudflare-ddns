@@ -63,7 +63,9 @@ pub fn get_current_ip() -> Result<String, Error> {
     Ok(reqwest::Client::new()
         .get("http://ipv4.icanhazip.com")
         .send()?
-        .text()?)
+        .text()?
+        .trim()
+        .into())
 }
 
 pub fn update_ddns(ip: &str, domain: &str, zone_id: &str, record_id: &str, email: &str, key: &str) -> Result<(), Error> {
