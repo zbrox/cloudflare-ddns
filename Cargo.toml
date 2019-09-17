@@ -12,3 +12,11 @@ license = "MIT"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+quicli = "0.4"
+structopt = "0.3.1"
+reqwest="0.9.20"
+serde = "1.0.101"
+serde_json = "1.0.40"
+exitcode = "1.1.2"
+human-panic = "1.0.1"
+failure = "0.1.5"
