@@ -38,10 +38,6 @@ fn main() -> CliResult {
     let args = Cli::from_args();
     let should_use_cache = args.cache.is_some();
 
-    if should_use_cache {
-        println!("Using cached IP from previous request...");
-    }
-
     let cached_ip: Option<String> = match args.cache.clone() {
         Some(v) => {
             if v.exists() {
