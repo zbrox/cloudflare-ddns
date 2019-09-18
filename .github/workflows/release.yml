@@ -21,7 +21,7 @@ jobs:
         with:
           toolchain: nightly
           command: build
-          arguments: --release
+          args: --release
       - name: Get the version
         run: echo ::set-env name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
       - name: Archive
