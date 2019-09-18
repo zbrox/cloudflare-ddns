@@ -22,21 +22,16 @@ jobs:
           toolchain: nightly
           command: build
           arguments: --release
-      - name: Extract version
-        id: version
-        uses: actions/github-script@0.2.0
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            return context.payload.ref.split('/')[2];
+      - name: Get the version
+        run: echo ::set-env name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
       - name: Archive
-        run: tar cfJ cloudflare-ddns-${{ steps.version.outputs.result }}.tar.xz target/cloudflare-ddns
+        run: tar cfJ cloudflare-ddns-${{ VERSION }}.tar.xz target/release/cloudflare-ddns
       - name: Create release
         uses: softprops/action-gh-release@v1
         with:
           body: |
-            cloudflare-ddns release ${{ steps.version.outputs.result }}
+            cloudflare-ddns release ${{ VERSION }}
           files: |
-            cloudflare-ddns-${{ steps.version.outputs.result }}
+            cloudflare-ddns-${{ VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
