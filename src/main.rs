@@ -19,7 +19,7 @@ struct Cli {
     #[structopt(long = "key", short = "k")]
     auth_key: String,
 
-    /// The zone in which your domain is (usually that is your domain without the subdomain)
+    /// The zone in which your domain is (usually that is your base domain name)
     #[structopt(long = "zone", short = "z")]
     zone: String,
 
