@@ -1,7 +1,7 @@
 use failure::Error;
 use std::fs::File;
-use std::path::PathBuf;
 use std::io::prelude::*;
+use std::path::PathBuf;
 
 pub fn read_cache_file(path: &PathBuf) -> Result<String, Error> {
     let mut file = File::open(&path)?;
