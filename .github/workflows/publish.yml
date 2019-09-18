@@ -22,7 +22,7 @@ jobs:
         with:
           toolchain: nightly
           command: login
-          arguments: ${{ secrets.CRATES_TOKEN }}
+          args: ${{ secrets.CRATES_TOKEN }}
       - name: Publish to crates.io
         uses: actions-rs/cargo@v1
         with:
