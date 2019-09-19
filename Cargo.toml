@@ -10,6 +10,7 @@ keywords = ["cloudflare", "ddns", "cli"]
 categories = ["command-line-utilities"]
 license = "MIT"
 documentation = "https://github.com/zbrox/cloudflare-ddns"
+readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
