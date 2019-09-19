@@ -1,13 +1,71 @@
 on:
   push:
-    branches:
-      - master
+    tags:
+      - '*.*.*'
 
-name: Publish to crates.io
+name: Publish
 
 jobs:
-  build_and_test:
-    name: Publish cloudflare-ddns
+  build:
+    name: Build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macOS-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Install nightly toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+            toolchain: nightly
+            override: true
+      - name: Cargo build
+        uses: actions-rs/cargo@v1
+        with:
+          toolchain: nightly
+          command: build
+          args: --release
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
+      - name: Archive binary
+        run: tar cfJ cloudflare-ddns-${{ matrix.os }}-${{ steps.get_version.outputs.VERSION }}.tar.xz target/release/cloudflare-ddns
+      - name: Save archived binary as an artifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: binary-${{ matrix.os }}-${{ steps.get_version.outputs.VERSION }}
+          path: cloudflare-ddns-${{ matrix.os }}-${{ steps.get_version.outputs.VERSION }}.tar.xz
+  create_github_release:
+    name: Prepare a GitHub release
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
+      - name: Download macOS binary archive
+        uses: actions/download-artifact@v1
+        with:
+          name: binary-macOS-latest-${{ steps.get_version.outputs.VERSION }}
+          path: cloudflare-ddns-macOS-${{ steps.get_version.outputs.VERSION }}.tar.xz
+      - name: Download Linux binary archive
+        uses: actions/download-artifact@v1
+        with:
+          name: binary-ubuntu-latest-${{ steps.get_version.outputs.VERSION }}
+          path: cloudflare-ddns-ubuntu-${{ steps.get_version.outputs.VERSION }}.tar.xz
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: cloudflare-ddns v${{ steps.get_version.outputs.VERSION }}
+          files: |
+            LICENSE
+            cloudflare-ddns-macOS-${{ steps.get_version.outputs.VERSION }}
+            cloudflare-ddns-ubuntu-${{ steps.get_version.outputs.VERSION }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  publish_crate:
+    name: Publish cloudflare-ddns to crates.io
     runs-on: ubuntu-latest
     steps:
       - name: Checkout latest master
