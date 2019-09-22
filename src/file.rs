@@ -1,19 +1,12 @@
 use failure::Error;
-use std::fs::File;
-use std::io::prelude::*;
+use quicli::fs::{write_to_file, read_file};
 use std::path::PathBuf;
 
 pub fn read_cache_file(path: &PathBuf) -> Result<String, Error> {
-    let mut file = File::open(&path)?;
-    let mut s = String::new();
-    file.read_to_string(&mut s)?;
-
-    Ok(s.clone())
+    Ok(read_file(path)?)
 }
 
 pub fn write_cache_file(path: &PathBuf, ip: &str) -> Result<(), Error> {
-    let mut file = File::create(&path)?;
-    file.write_all(ip.as_bytes())?;
-
+    write_to_file(path, ip)?;
     Ok(())
 }
