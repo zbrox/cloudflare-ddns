@@ -60,8 +60,8 @@ jobs:
           name: cloudflare-ddns v${{ steps.get_version.outputs.VERSION }}
           files: |
             LICENSE
-            cloudflare-ddns-macOS-${{ steps.get_version.outputs.VERSION }}
-            cloudflare-ddns-ubuntu-${{ steps.get_version.outputs.VERSION }}
+            cloudflare-ddns-macOS-${{ steps.get_version.outputs.VERSION }}.tar.xz
+            cloudflare-ddns-ubuntu-${{ steps.get_version.outputs.VERSION }}.tar.xz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   publish_crate:
