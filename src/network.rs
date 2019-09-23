@@ -77,7 +77,16 @@ pub fn get_dns_record_id(
         return Err(format_err!("API Error: {}", err));
     }
 
-    Ok(response.result[0].id.clone())
+    let id = match response.result.first() {
+        Some(v) => v.id.clone(),
+        None => {
+            return Err(format_err!(
+                "Unexpected API result for DNS record. Check if you passed the right options."
+            ))
+        }
+    };
+
+    Ok(id)
 }
 
 pub fn get_current_ip() -> Result<String, Error> {
