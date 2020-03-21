@@ -1,5 +1,5 @@
 use failure::{format_err, Error};
-use serde::{Deserialize, Serialize};
+use serde_derive::{Deserialize, Serialize};
 
 #[derive(Deserialize, Debug)]
 struct CloudflareListResponse {
@@ -29,7 +29,7 @@ struct UpdateIpData {
 }
 
 pub fn get_zone_identifier(zone: &str, email: &str, key: &str) -> Result<String, Error> {
-    let client = reqwest::Client::new();
+    let client = reqwest::blocking::Client::new();
     let url = format!("https://api.cloudflare.com/client/v4/zones?name={}", zone);
     let response: CloudflareListResponse = client
         .get(&url)
@@ -56,7 +56,7 @@ pub fn get_dns_record_id(
     email: &str,
     key: &str,
 ) -> Result<String, Error> {
-    let client = reqwest::Client::new();
+    let client = reqwest::blocking::Client::new();
     let url = format!(
         "https://api.cloudflare.com/client/v4/zones/{}/dns_records?name={}",
         zone_id, domain
@@ -90,7 +90,7 @@ pub fn get_dns_record_id(
 }
 
 pub fn get_current_ip() -> Result<String, Error> {
-    Ok(reqwest::Client::new()
+    Ok(reqwest::blocking::Client::new()
         .get("http://ipv4.icanhazip.com")
         .send()?
         .text()?
@@ -106,7 +106,7 @@ pub fn update_ddns(
     email: &str,
     key: &str,
 ) -> Result<(), Error> {
-    let client = reqwest::Client::new();
+    let client = reqwest::blocking::Client::new();
     let url = format!(
         "https://api.cloudflare.com/client/v4/zones/{}/dns_records/{}",
         zone_id, record_id
