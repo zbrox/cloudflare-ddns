@@ -1,5 +1,5 @@
-use failure::{format_err, Error};
 use serde_derive::{Deserialize, Serialize};
+use anyhow::{anyhow};
 
 #[derive(Deserialize, Debug)]
 struct CloudflareListResponse {
@@ -28,7 +28,7 @@ struct UpdateIpData {
     content: String,
 }
 
-pub fn get_zone_identifier(zone: &str, email: &str, key: &str) -> Result<String, Error> {
+pub fn get_zone_identifier(zone: &str, email: &str, key: &str) -> anyhow::Result<String> {
     let client = reqwest::blocking::Client::new();
     let url = format!("https://api.cloudflare.com/client/v4/zones?name={}", zone);
     let response: CloudflareListResponse = client
@@ -38,13 +38,14 @@ pub fn get_zone_identifier(zone: &str, email: &str, key: &str) -> Result<String,
         .header("Content-Type", "application/json")
         .send()?
         .json()?;
+
     if !response.success {
         let err: String = response
             .errors
             .iter()
             .map(|s| format!("{}\n", s.to_owned()))
             .collect();
-        return Err(format_err!("API Error: {}", err));
+        return Err(anyhow!("API Error: {}", err));
     }
 
     Ok(response.result[0].id.clone())
@@ -55,7 +56,7 @@ pub fn get_dns_record_id(
     domain: &str,
     email: &str,
     key: &str,
-) -> Result<String, Error> {
+) -> anyhow::Result<String> {
     let client = reqwest::blocking::Client::new();
     let url = format!(
         "https://api.cloudflare.com/client/v4/zones/{}/dns_records?name={}",
@@ -68,19 +69,20 @@ pub fn get_dns_record_id(
         .header("Content-Type", "application/json")
         .send()?
         .json()?;
+
     if !response.success {
         let err: String = response
             .errors
             .iter()
             .map(|s| format!("{}\n", s.to_owned()))
             .collect();
-        return Err(format_err!("API Error: {}", err));
+        return Err(anyhow!("API Error: {}", err));
     }
 
     let id = match response.result.first() {
         Some(v) => v.id.clone(),
         None => {
-            return Err(format_err!(
+            return Err(anyhow!(
                 "Unexpected API result for DNS record. Check if you passed the right options."
             ))
         }
@@ -89,7 +91,7 @@ pub fn get_dns_record_id(
     Ok(id)
 }
 
-pub fn get_current_ip() -> Result<String, Error> {
+pub fn get_current_ip() -> anyhow::Result<String> {
     Ok(reqwest::blocking::Client::new()
         .get("http://ipv4.icanhazip.com")
         .send()?
@@ -105,7 +107,7 @@ pub fn update_ddns(
     record_id: &str,
     email: &str,
     key: &str,
-) -> Result<(), Error> {
+) -> anyhow::Result<()> {
     let client = reqwest::blocking::Client::new();
     let url = format!(
         "https://api.cloudflare.com/client/v4/zones/{}/dns_records/{}",
@@ -134,7 +136,7 @@ pub fn update_ddns(
             .iter()
             .map(|s| format!("{}\n", s.to_owned()))
             .collect();
-        return Err(format_err!("Unsuccessful update of DNS record: {}", err));
+        return Err(anyhow!("Unsuccessful update of DNS record: {}", err));
     }
 
     Ok(())
