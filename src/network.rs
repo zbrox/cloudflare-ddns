@@ -31,16 +31,23 @@ struct UpdateIpData {
 pub fn get_zone_identifier(zone: &str, email: &str, key: &str) -> anyhow::Result<String> {
     let client = reqwest::blocking::Client::new();
     let url = format!("https://api.cloudflare.com/client/v4/zones?name={}", zone);
-    let response: CloudflareListResponse = client
+
+    let response = client
         .get(&url)
         .header("X-Auth-Email", email)
         .header("X-Auth-Key", key)
         .header("Content-Type", "application/json")
-        .send()?
+        .send()?;
+
+    if response.status() != 200 {
+        return Err(anyhow!("API Error: HTTP {}", response.status()));
+    }
+
+    let body: CloudflareListResponse = response
         .json()?;
 
-    if !response.success {
-        let err: String = response
+    if !body.success {
+        let err: String = body
             .errors
             .iter()
             .map(|s| format!("{}\n", s.to_owned()))
@@ -48,7 +55,14 @@ pub fn get_zone_identifier(zone: &str, email: &str, key: &str) -> anyhow::Result
         return Err(anyhow!("API Error: {}", err));
     }
 
-    Ok(response.result[0].id.clone())
+    let zones = match body.result {
+        Some(v) => v,
+        None => { 
+            return Err(anyhow!("No zones returned"))
+        },
+    };
+
+    Ok(zones[0].id.clone())
 }
 
 pub fn get_dns_record_id(
@@ -62,16 +76,22 @@ pub fn get_dns_record_id(
         "https://api.cloudflare.com/client/v4/zones/{}/dns_records?name={}",
         zone_id, domain
     );
-    let response: CloudflareListResponse = client
+
+    let response = client
         .get(&url)
         .header("X-Auth-Email", email)
         .header("X-Auth-Key", key)
         .header("Content-Type", "application/json")
-        .send()?
-        .json()?;
+        .send()?;
 
-    if !response.success {
-        let err: String = response
+    if response.status() != 200 {
+        return Err(anyhow!("API Error: HTTP {}", response.status()));
+    }
+        
+    let body: CloudflareListResponse = response.json()?;
+
+    if !body.success {
+        let err: String = body
             .errors
             .iter()
             .map(|s| format!("{}\n", s.to_owned()))
@@ -79,7 +99,14 @@ pub fn get_dns_record_id(
         return Err(anyhow!("API Error: {}", err));
     }
 
-    let id = match response.result.first() {
+    let records = match body.result {
+        Some(v) => v,
+        None => { 
+            return Err(anyhow!("No DNS records returned"))
+        },
+    };
+
+    let id = match records.first() {
         Some(v) => v.id.clone(),
         None => {
             return Err(anyhow!(
@@ -121,17 +148,23 @@ pub fn update_ddns(
         content: ip.to_owned(),
     };
 
-    let response: CloudflareUpdateResponse = client
+    let response = client
         .put(&url)
         .header("X-Auth-Email", email)
         .header("X-Auth-Key", key)
         .header("Content-Type", "application/json")
         .json(&update_data)
-        .send()?
+        .send()?;
+
+    if response.status() != 200 {
+        return Err(anyhow!("API Error: HTTP {}", response.status()));
+    }
+
+    let body: CloudflareUpdateResponse = response
         .json()?;
 
-    if !response.success {
-        let err: String = response
+    if !body.success {
+        let err: String = body
             .errors
             .iter()
             .map(|s| format!("{}\n", s.to_owned()))
