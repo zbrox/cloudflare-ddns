@@ -5,7 +5,7 @@ use anyhow::{anyhow};
 struct CloudflareListResponse {
     success: bool,
     errors: Vec<String>,
-    result: Vec<ObjectWithId>,
+    result: Option<Vec<ObjectWithId>>,
 }
 
 #[derive(Deserialize, Debug)]
