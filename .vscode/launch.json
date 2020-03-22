@@ -20,10 +20,10 @@
                 }
             },
             "args": [
-                "--key=$DDNS_AUTH_KEY",
-                "--domain=$DOMAIN",
-                "--email=$EMAIL",
-                "--zone=$ZONE"
+                "--key=${env:DDNS_AUTH_KEY}",
+                "--domain=${env:DOMAIN}",
+                "--email=${env:EMAIL}",
+                "--zone=${env:ZONE}"
             ],
             "cwd": "${workspaceFolder}"
         },
