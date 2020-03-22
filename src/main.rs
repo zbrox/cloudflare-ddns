@@ -1,13 +1,13 @@
 mod file;
 mod network;
 
-use file::{read_cache_file, write_cache_file};
+use file::{read_file, write_file};
 use human_panic::setup_panic;
 use network::{get_current_ip, get_dns_record_id, get_zone_identifier, update_ddns};
-use quicli::fs::read_file;
 use quicli::prelude::*;
 use std::path::PathBuf;
 use structopt::StructOpt;
+use anyhow::{Context, Result};
 
 #[derive(Deserialize)]
 struct Config {
@@ -45,7 +45,7 @@ struct Cli {
     cache: Option<PathBuf>,
 }
 
-fn main() -> CliResult {
+fn main() -> Result<()> {
     setup_panic!();
     let args = Cli::from_args();
 
@@ -53,7 +53,7 @@ fn main() -> CliResult {
     let cached_ip: Option<String> = match args.cache.clone() {
         Some(v) => {
             if v.exists() {
-                Some(read_cache_file(&v.clone())?)
+                Some(read_file(&v.clone()).context("Could not read cache file")?)
             } else {
                 Some("0.0.0.0".to_owned())
             }
@@ -73,12 +73,12 @@ fn main() -> CliResult {
             &current_ip,
             &args.cache.clone().unwrap()
         );
-        write_cache_file(&args.cache.unwrap(), &current_ip)?;
+        write_file(&args.cache.unwrap(), &current_ip)?;
     }
 
     let (email, auth_key, zone, domain) = match args.config {
         Some(c) => {
-            let config_str = read_file(c)?;
+            let config_str = read_file(&c)?;
             let config: Config = toml::from_str(&config_str)?;
             (config.email, config.auth_key, config.zone, config.domain)
         }
@@ -106,9 +106,9 @@ fn update(
     auth_key: &str,
     zone: &str,
     domain: &str,
-) -> Result<(), Error> {
-    let zone_id = get_zone_identifier(&zone, &email, &auth_key)?;
-    let record_id = get_dns_record_id(&zone_id, &domain, &email, &auth_key)?;
+) -> Result<()> {
+    let zone_id = get_zone_identifier(&zone, &email, &auth_key).context("Error getting the zone identifier")?;
+    let record_id = get_dns_record_id(&zone_id, &domain, &email, &auth_key).context("Error getting the DNS record ID")?;
 
     update_ddns(
         &current_ip,
@@ -117,7 +117,7 @@ fn update(
         &record_id,
         &email,
         &auth_key,
-    )?;
+    ).context("Error updating the DNS record")?;
 
     Ok(())
 }
