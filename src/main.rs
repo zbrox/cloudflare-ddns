@@ -62,15 +62,6 @@ fn main() -> Result<()> {
         return Ok(());
     }
 
-    if should_use_cache {
-        println!(
-            "Saving current IP {} to cache file {:?}...",
-            &current_ip,
-            &args.cache.clone().unwrap()
-        );
-        write_file(&args.cache.unwrap(), &current_ip)?;
-    }
-
     let (api_token, zone, domain) = match args.config {
         Some(c) => {
             let config_str = read_file(&c)?;
@@ -90,6 +81,15 @@ fn main() -> Result<()> {
         "Successfully updated the A record for {} to {}",
         &domain, &current_ip
     );
+
+    if should_use_cache {
+        println!(
+            "Saving current IP {} to cache file {:?}...",
+            &current_ip,
+            &args.cache.clone().unwrap()
+        );
+        write_file(&args.cache.unwrap(), &current_ip)?;
+    }
 
     Ok(())
 }
