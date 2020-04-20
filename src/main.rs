@@ -44,6 +44,8 @@ fn main() -> Result<()> {
     setup_panic!();
     let args = Cli::from_args();
 
+    env_logger::from_env(env_logger::Env::default().default_filter_or("info")).init();
+
     let should_use_cache = args.cache.is_some();
     let cached_ip: Option<String> = match args.cache.clone() {
         Some(v) => {
@@ -58,7 +60,7 @@ fn main() -> Result<()> {
 
     let current_ip = get_current_ip()?;
     if cached_ip.is_some() && current_ip == cached_ip.unwrap() {
-        println!("IP is unchanged. Exiting...");
+        log::info!("IP is unchanged. Exiting...");
         return Ok(());
     }
 
@@ -77,13 +79,13 @@ fn main() -> Result<()> {
 
     update(&current_ip, &api_token, &zone, &domain)?;
 
-    println!(
+    log::info!(
         "Successfully updated the A record for {} to {}",
         &domain, &current_ip
     );
 
     if should_use_cache {
-        println!(
+        log::info!(
             "Saving current IP {} to cache file {:?}...",
             &current_ip,
             &args.cache.clone().unwrap()
