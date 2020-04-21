@@ -11,8 +11,7 @@ use anyhow::{Context, Result};
 
 #[derive(Deserialize)]
 struct Config {
-    email: String,
-    auth_key: String,
+    api_token: String,
     zone: String,
     domain: String,
 }
@@ -20,17 +19,13 @@ struct Config {
 #[derive(Debug, StructOpt)]
 /// Inform Cloudflare's DDNS service of the current IP address for your domain
 struct Cli {
-    /// Your TOML config file containing all the required options (email, auth_key, zone, domain) which you can use instead of passing the arguments to the command line
+    /// Your TOML config file containing all the required options (api_token, zone, domain) which you can use instead of passing the arguments to the command line
     #[structopt(long = "config", short = "f")]
     config: Option<PathBuf>,
 
-    /// Your Cloudflare login email
-    #[structopt(long = "email", short = "e", required_unless = "config")]
-    email: Option<String>,
-
-    /// The auth key you need to generate in your Cloudflare profile
-    #[structopt(long = "key", short = "k", required_unless = "config")]
-    auth_key: Option<String>,
+    /// The api token you need to generate in your Cloudflare profile
+    #[structopt(long = "token", short = "t", required_unless = "config")]
+    api_token: Option<String>,
 
     /// The zone in which your domain is (usually that is your base domain name)
     #[structopt(long = "zone", short = "z", required_unless = "config")]
@@ -49,6 +44,8 @@ fn main() -> Result<()> {
     setup_panic!();
     let args = Cli::from_args();
 
+    env_logger::from_env(env_logger::Env::default().default_filter_or("info")).init();
+
     let should_use_cache = args.cache.is_some();
     let cached_ip: Option<String> = match args.cache.clone() {
         Some(v) => {
@@ -63,12 +60,32 @@ fn main() -> Result<()> {
 
     let current_ip = get_current_ip()?;
     if cached_ip.is_some() && current_ip == cached_ip.unwrap() {
-        println!("IP is unchanged. Exiting...");
+        log::info!("IP is unchanged. Exiting...");
         return Ok(());
     }
 
+    let (api_token, zone, domain) = match args.config {
+        Some(c) => {
+            let config_str = read_file(&c)?;
+            let config: Config = toml::from_str(&config_str)?;
+            (config.api_token, config.zone, config.domain)
+        }
+        None => (
+            args.api_token.expect("API token is not set"),
+            args.zone.expect("Zone is not set"),
+            args.domain.expect("Domain is not set"),
+        ),
+    };
+
+    update(&current_ip, &api_token, &zone, &domain)?;
+
+    log::info!(
+        "Successfully updated the A record for {} to {}",
+        &domain, &current_ip
+    );
+
     if should_use_cache {
-        println!(
+        log::info!(
             "Saving current IP {} to cache file {:?}...",
             &current_ip,
             &args.cache.clone().unwrap()
@@ -76,47 +93,24 @@ fn main() -> Result<()> {
         write_file(&args.cache.unwrap(), &current_ip)?;
     }
 
-    let (email, auth_key, zone, domain) = match args.config {
-        Some(c) => {
-            let config_str = read_file(&c)?;
-            let config: Config = toml::from_str(&config_str)?;
-            (config.email, config.auth_key, config.zone, config.domain)
-        }
-        None => (
-            args.email.expect("Email is not set"),
-            args.auth_key.expect("Auth key is not set"),
-            args.zone.expect("Zone is not set"),
-            args.domain.expect("Domain is not set"),
-        ),
-    };
-
-    update(&current_ip, &email, &auth_key, &zone, &domain)?;
-
-    println!(
-        "Successfully updated the A record for {} to {}",
-        &domain, &current_ip
-    );
-
     Ok(())
 }
 
 fn update(
     current_ip: &str,
-    email: &str,
-    auth_key: &str,
+    api_token: &str,
     zone: &str,
     domain: &str,
 ) -> Result<()> {
-    let zone_id = get_zone_identifier(&zone, &email, &auth_key).context("Error getting the zone identifier")?;
-    let record_id = get_dns_record_id(&zone_id, &domain, &email, &auth_key).context("Error getting the DNS record ID")?;
+    let zone_id = get_zone_identifier(&zone, &api_token).context("Error getting the zone identifier")?;
+    let record_id = get_dns_record_id(&zone_id, &domain, &api_token).context("Error getting the DNS record ID")?;
 
     update_ddns(
         &current_ip,
         &domain,
         &zone_id,
         &record_id,
-        &email,
-        &auth_key,
+        &api_token,
     ).context("Error updating the DNS record")?;
 
     Ok(())
