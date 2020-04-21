@@ -28,14 +28,13 @@ struct UpdateIpData {
     content: String,
 }
 
-pub fn get_zone_identifier(zone: &str, email: &str, key: &str) -> anyhow::Result<String> {
+pub fn get_zone_identifier(zone: &str, api_token: &str) -> anyhow::Result<String> {
     let client = reqwest::blocking::Client::new();
     let url = format!("https://api.cloudflare.com/client/v4/zones?name={}", zone);
 
     let response = client
         .get(&url)
-        .header("X-Auth-Email", email)
-        .header("X-Auth-Key", key)
+        .header("Authorization", format!("Bearer {}", api_token))
         .header("Content-Type", "application/json")
         .send()?;
 
@@ -68,8 +67,7 @@ pub fn get_zone_identifier(zone: &str, email: &str, key: &str) -> anyhow::Result
 pub fn get_dns_record_id(
     zone_id: &str,
     domain: &str,
-    email: &str,
-    key: &str,
+    api_token: &str,
 ) -> anyhow::Result<String> {
     let client = reqwest::blocking::Client::new();
     let url = format!(
@@ -79,8 +77,7 @@ pub fn get_dns_record_id(
 
     let response = client
         .get(&url)
-        .header("X-Auth-Email", email)
-        .header("X-Auth-Key", key)
+        .header("Authorization", format!("Bearer {}", api_token))
         .header("Content-Type", "application/json")
         .send()?;
 
@@ -132,8 +129,7 @@ pub fn update_ddns(
     domain: &str,
     zone_id: &str,
     record_id: &str,
-    email: &str,
-    key: &str,
+    api_token: &str,
 ) -> anyhow::Result<()> {
     let client = reqwest::blocking::Client::new();
     let url = format!(
@@ -150,8 +146,7 @@ pub fn update_ddns(
 
     let response = client
         .put(&url)
-        .header("X-Auth-Email", email)
-        .header("X-Auth-Key", key)
+        .header("Authorization", format!("Bearer {}", api_token))
         .header("Content-Type", "application/json")
         .json(&update_data)
         .send()?;
