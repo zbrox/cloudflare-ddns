@@ -50,7 +50,7 @@ fn main() -> Result<()> {
     let cached_ip: Option<String> = match args.cache.clone() {
         Some(v) => {
             if v.exists() {
-                Some(read_file(&v.clone()).context("Could not read cache file")?)
+                Some(read_file(&v).context("Could not read cache file")?)
             } else {
                 Some("0.0.0.0".to_owned())
             }
