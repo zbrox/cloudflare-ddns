@@ -1,12 +1,12 @@
 # CloudFlare DDNS update tool
 
-![](https://github.com/zbrox/cloudflare-ddns/workflows/Build/badge.svg)
+![build badge](https://github.com/zbrox/cloudflare-ddns/workflows/Build/badge.svg)
 
 This is a simple CLI you can use to continuously update an A DNS record for a domain using CloudFlare's free DDNS service.
 
 ## Options
 
-```
+```text
     -t, --token <api-token>     The API token you need to generate in your Cloudflare profile
     -c, --cache <cache>      Cache file for previously reported IP address (if skipped the IP will be reported on every
                              execution)
