@@ -102,15 +102,15 @@ fn update(
     zone: &str,
     domain: &str,
 ) -> Result<()> {
-    let zone_id = get_zone_identifier(&zone, &api_token).context("Error getting the zone identifier")?;
-    let record_id = get_dns_record_id(&zone_id, &domain, &api_token).context("Error getting the DNS record ID")?;
+    let zone_id = get_zone_identifier(zone, api_token).context("Error getting the zone identifier")?;
+    let record_id = get_dns_record_id(&zone_id, domain, api_token).context("Error getting the DNS record ID")?;
 
     update_ddns(
-        &current_ip,
-        &domain,
+        current_ip,
+        domain,
         &zone_id,
         &record_id,
-        &api_token,
+        api_token,
     ).context("Error updating the DNS record")?;
 
     Ok(())
