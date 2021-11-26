@@ -18,7 +18,7 @@ This is a simple CLI you can use to continuously update an A DNS record for a do
 
 ### Config
 
-You Can pass a path to a configuration file (`-f` or `--config`) instead of each option as a command line argument. The configuration should be a [TOML](https://github.com/toml-lang/toml) file and hold the same options. Here's a sample:
+You can pass a path to a configuration file (`-f` or `--config`) instead of each option as a command line argument. The configuration should be a [TOML](https://github.com/toml-lang/toml) file and hold the same options. Here's a sample:
 
 ```TOML
 api_token = "secretkey"
@@ -36,4 +36,4 @@ You need to add a type `A` DNS record for your domain. The `Name` field you shou
 
 ### API token
 
-We need to authenticate ourselves in front of the Cloudflare API. To do so we need to an API token to pass along with every request. You can generate an API token to use specifically with this application on Cloudflare in `My profile > API Tokens > Create Token`.
+We need to authenticate ourselves in front of the Cloudflare API. To do so we need to create an API token to pass along with every request. You can generate an API token to use specifically with this application on Cloudflare in `My profile > API Tokens > Create Token`.
